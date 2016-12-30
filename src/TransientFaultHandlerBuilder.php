@@ -19,13 +19,13 @@ class TransientFaultHandlerBuilder
     private $retryStrategy;
 
     /**
-     * TransientFaultHandlerBuilder constructor.
-     *
      * @param LoggerInterface $logger
+     * @return TransientFaultHandlerBuilder
      */
-    public function __construct(LoggerInterface $logger)
+    public function setLogger(LoggerInterface $logger)
     {
         $this->logger = $logger;
+        return $this;
     }
 
     /**
@@ -64,7 +64,11 @@ class TransientFaultHandlerBuilder
 
         $sleep = new Sleep();
         $transientFaultHandler = new TransientFaultHandler($this->detectionStrategy, $this->retryStrategy, $sleep);
-        $transientFaultHandler->setLogger($this->logger);
+
+        if ($this->logger) {
+            $transientFaultHandler->setLogger($this->logger);
+        }
+
         return $transientFaultHandler;
     }
 }

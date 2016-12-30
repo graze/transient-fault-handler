@@ -15,8 +15,7 @@
 
 >Follow the instructions on the respective sites to add your project. Builds should be triggered on each Pull Request and each merge in to the master branch.
 
-This is where your description should go, try and limit it to a paragraph or two. It should outline the 'mission' or goals of the project
-to make it clear what the project is trying to achieve and the problems that it solves.
+Retries tasks that fail due to transient errors. Well suited to network requests but can retry any callable.
 
 ## Install
 
@@ -27,6 +26,30 @@ $ composer require graze/transient-fault-handler
 ```
 
 ## Usage
+
+The transient fault handler takes a detection strategy and a retry strategy.
+
+``` php
+$task = function () {
+    // Task that is prone to transient errors
+};
+
+$builder = new TransientFaultHandlerBuilder();
+$transientFaultHandler = $builder
+    ->setDetectionStrategy(new DefaultDetectionStrategy())
+    ->setRetryStrategy(new ExponentialBackoffStrategy())
+    ->build();
+
+$result = $transientFaultHandler->execute($task);
+```
+
+### Detection Strategy
+
+When a task is tried, it will either return some value or throw an exception. The detection strategy will decide if that value/exception indicates a transient error or not. If it does, then the fault handler will be told to retry the task. if it does not, then the value/exception either indicates a success or a non-transient error that retrying wouldn't solve. In these cases, the value is returned to the caller or the exception is rethrown.
+
+### Retry Strategy
+
+If the detection strategy decides that the task should be retried, the retry strategy will decide how long to wait before doing so (the backoff period), and optionally impose a maximum number of retries on the task.
 
 
 ## Change log
