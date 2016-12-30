@@ -30,8 +30,8 @@ clean: ## Clean up any images.
 
 # Testing
 
-test: ## Run the unit and integration testsuites.
-test: lint test-unit test-integration
+test: ## Run the unit testsuite.
+test: lint test-unit
 
 lint: ## Run phpcs against the code.
 	$(DOCKER_RUN) vendor/bin/phpcs -p --warning-severity=0 src/ tests/
@@ -49,9 +49,6 @@ test-matrix: ## Run the unit tests against multiple targets.
     vendor/bin/phpunit --testsuite unit
 	${DOCKER} run --rm -t ${VOLUME_MAP} -w ${VOLUME} diegomarangoni/hhvm:cli \
     vendor/bin/phpunit --testsuite unit
-
-test-integration: ## Run the integration testsuite.
-	$(DOCKER_RUN) vendor/bin/phpunit --colors=always --testsuite integration
 
 test-coverage: ## Run all tests and output coverage to the console.
 	$(DOCKER_RUN) vendor/bin/phpunit --coverage-text
