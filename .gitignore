@@ -1,4 +1,14 @@
+# macOS
+*.DS_Store
+.AppleDouble
+.LSOverride
+
+# Composer
+composer.phar
 /vendor/
-composer.lock
-/tests/report/
+
+# PhpStorm
 .idea/
+
+# Test Reports
+/tests/report/
