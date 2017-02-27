@@ -2,22 +2,6 @@
 
 All Notable changes to `graze/transient-fault-handler` will be documented in this file
 
-## [Version] - YYYY-MM-DD
+## v0.1.0 - 2017-02-27
 
-### Added
-- Nothing
-
-### Changed
-- Nothing
-
-### Fixed
-- Nothing
-
-### Deprecated
-- Nothing
-
-### Removed
-- Nothing
-
-### Security
-- Nothing
+Initial pre-release version.
