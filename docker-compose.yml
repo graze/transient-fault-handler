@@ -1,0 +1,7 @@
+version: '3'
+
+services:
+    transient-fault-handler:
+        build: ./
+        volumes:
+            - ./:/opt/graze/transient-fault-handler
