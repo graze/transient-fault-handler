@@ -248,4 +248,10 @@ class TransientFaultHandlerTest extends TestCase
         $handler->execute(function () {
         });
     }
+
+    public function testFactoryMethod()
+    {
+        $transientFaultHandler = TransientFaultHandler::factory();
+        $this->assertInstanceOf(TransientFaultHandler::class, $transientFaultHandler);
+    }
 }

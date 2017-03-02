@@ -27,12 +27,7 @@ $task = function () {
     // Task that is prone to transient errors
 };
 
-$builder = new TransientFaultHandlerBuilder();
-$transientFaultHandler = $builder
-    ->setDetectionStrategy(new DefaultDetectionStrategy())
-    ->setRetryStrategy(new ExponentialBackoffStrategy())
-    ->build();
-
+$transientFaultHandler = TransientFaultHandler::factory();
 $result = $transientFaultHandler->execute($task);
 ```
 

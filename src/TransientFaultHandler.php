@@ -15,7 +15,9 @@
 namespace Graze\TransientFaultHandler;
 
 use Exception;
+use Graze\TransientFaultHandler\DetectionStrategy\DefaultDetectionStrategy;
 use Graze\TransientFaultHandler\DetectionStrategy\DetectionStrategyInterface;
+use Graze\TransientFaultHandler\RetryStrategy\ExponentialBackoffStrategy;
 use Graze\TransientFaultHandler\RetryStrategy\RetryStrategyInterface;
 use Psr\Log\LoggerAwareTrait;
 
@@ -113,5 +115,29 @@ class TransientFaultHandler implements TransientFaultHandlerInterface
         }
 
         return $result;
+    }
+
+    /**
+     * Return an instance of TransientFaultHandler. A detection strategy and retry strategy can optionally be set
+     * otherwise defaults are chosen.
+     *
+     * @param DetectionStrategyInterface $detectionStrategy
+     * @param RetryStrategyInterface $retryStrategy
+     *
+     * @return static
+     */
+    public static function factory(
+        DetectionStrategyInterface $detectionStrategy = null,
+        RetryStrategyInterface $retryStrategy = null
+    ) {
+        if (!$detectionStrategy) {
+            $detectionStrategy = new DefaultDetectionStrategy();
+        }
+
+        if (!$retryStrategy) {
+            $retryStrategy = new ExponentialBackoffStrategy();
+        }
+
+        return new static($detectionStrategy, $retryStrategy, new Sleep());
     }
 }
