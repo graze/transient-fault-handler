@@ -1,4 +1,4 @@
-FROM php:5.5-cli
+FROM php:7-cli
 
 RUN apt-get update && apt-get install -y php5-xdebug --no-install-recommends && rm -r /var/lib/apt/lists/*
 
