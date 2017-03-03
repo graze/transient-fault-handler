@@ -15,15 +15,19 @@
 namespace Graze\TransientFaultHandler;
 
 use Exception;
-use Graze\TransientFaultHandler\DetectionStrategy\DetectionStrategyInterface;
+use Graze\TransientFaultHandler\DetectionStrategy\ExceptionDetectionStrategyInterface;
+use Graze\TransientFaultHandler\DetectionStrategy\ReturnValueDetectionStrategyInterface;
 use Graze\TransientFaultHandler\RetryStrategy\RetryStrategyInterface;
 use Graze\TransientFaultHandler\Test\TestCase;
 use Mockery;
 
 class TransientFaultHandlerTest extends TestCase
 {
-    /** @var DetectionStrategyInterface */
-    private $detectionStrategy;
+    /** @var ExceptionDetectionStrategyInterface */
+    private $exceptionDetectionStrategy;
+
+    /** @var ReturnValueDetectionStrategyInterface */
+    private $returnValueDetectionStrategy;
 
     /** @var RetryStrategyInterface */
     private $retryStrategy;
@@ -35,7 +39,8 @@ class TransientFaultHandlerTest extends TestCase
     {
         parent::setUp();
 
-        $this->detectionStrategy = Mockery::mock(DetectionStrategyInterface::class);
+        $this->exceptionDetectionStrategy = Mockery::mock(ExceptionDetectionStrategyInterface::class);
+        $this->returnValueDetectionStrategy = Mockery::mock(ReturnValueDetectionStrategyInterface::class);
         $this->retryStrategy = Mockery::mock(RetryStrategyInterface::class);
         $this->sleep = Mockery::mock(Sleep::class);
     }
@@ -50,7 +55,7 @@ class TransientFaultHandlerTest extends TestCase
     public function testDoesNotRetryAfterSuccess(array $isTransientReturnValues, $expectedCallCount)
     {
         // Mock the detection strategy
-        $expectation = $this->detectionStrategy->shouldReceive('isResultTransient');
+        $expectation = $this->returnValueDetectionStrategy->shouldReceive('isReturnValueTransient');
         call_user_func_array([$expectation, 'andReturn'], $isTransientReturnValues);
 
         // Mock the retry strategy
@@ -68,7 +73,13 @@ class TransientFaultHandlerTest extends TestCase
         };
 
         // Create a handler
-        $handler = new TransientFaultHandler($this->detectionStrategy, $this->retryStrategy, $this->sleep);
+        $handler = new TransientFaultHandler(
+            $this->exceptionDetectionStrategy,
+            $this->returnValueDetectionStrategy,
+            $this->retryStrategy,
+            $this->sleep
+        );
+
         $result = $handler->execute($task);
 
         // Test that the result of the task is returned by the handler
@@ -98,7 +109,7 @@ class TransientFaultHandlerTest extends TestCase
     public function testDoesNotRetryAfterNonTransientException()
     {
         // Mock the detection strategy
-        $this->detectionStrategy->shouldReceive('isExceptionTransient')->andReturn(false);
+        $this->exceptionDetectionStrategy->shouldReceive('isExceptionTransient')->andReturn(false);
 
         // Mock the retry strategy
         $this->retryStrategy->shouldReceive('shouldRetry')->andReturn(true);
@@ -118,7 +129,13 @@ class TransientFaultHandlerTest extends TestCase
         };
 
         // Create a handler
-        $handler = new TransientFaultHandler($this->detectionStrategy, $this->retryStrategy, $this->sleep);
+        $handler = new TransientFaultHandler(
+            $this->exceptionDetectionStrategy,
+            $this->returnValueDetectionStrategy,
+            $this->retryStrategy,
+            $this->sleep
+        );
+
         $handler->execute($task);
     }
 
@@ -128,8 +145,8 @@ class TransientFaultHandlerTest extends TestCase
     public function testTransientExceptionsIgnored()
     {
         // Mock the detection strategy
-        $this->detectionStrategy->shouldReceive('isExceptionTransient')->andReturn(true)->once();
-        $this->detectionStrategy->shouldReceive('isResultTransient')->andReturn(false)->once();
+        $this->exceptionDetectionStrategy->shouldReceive('isExceptionTransient')->andReturn(true)->once();
+        $this->returnValueDetectionStrategy->shouldReceive('isReturnValueTransient')->andReturn(false)->once();
 
         // Mock the retry strategy
         $this->retryStrategy->shouldReceive('shouldRetry')->andReturn(true);
@@ -149,7 +166,13 @@ class TransientFaultHandlerTest extends TestCase
         };
 
         // Create a handler
-        $handler = new TransientFaultHandler($this->detectionStrategy, $this->retryStrategy, $this->sleep);
+        $handler = new TransientFaultHandler(
+            $this->exceptionDetectionStrategy,
+            $this->returnValueDetectionStrategy,
+            $this->retryStrategy,
+            $this->sleep
+        );
+
         $result = $handler->execute($task);
 
         // Test that the result of the task is returned by the handler
@@ -162,7 +185,7 @@ class TransientFaultHandlerTest extends TestCase
     public function testRetriesAccordingToRetryStrategy()
     {
         // Mock the detection strategy
-        $this->detectionStrategy->shouldReceive('isResultTransient')->andReturn(true);
+        $this->returnValueDetectionStrategy->shouldReceive('isReturnValueTransient')->andReturn(true);
 
         // Mock the retry strategy
         $this->retryStrategy->shouldReceive('shouldRetry')->andReturn(true, true, true, false);
@@ -178,7 +201,13 @@ class TransientFaultHandlerTest extends TestCase
         };
 
         // Create a handler
-        $handler = new TransientFaultHandler($this->detectionStrategy, $this->retryStrategy, $this->sleep);
+        $handler = new TransientFaultHandler(
+            $this->exceptionDetectionStrategy,
+            $this->returnValueDetectionStrategy,
+            $this->retryStrategy,
+            $this->sleep
+        );
+
         $handler->execute($task);
 
         // Test that the task was called the expected number of times
@@ -195,7 +224,7 @@ class TransientFaultHandlerTest extends TestCase
     public function testSleepsAccordingToRetryStrategy(array $backoffPeriods, array $shouldRetryReturnValues)
     {
         // Mock the detection strategy
-        $this->detectionStrategy->shouldReceive('isResultTransient')->andReturn(true);
+        $this->returnValueDetectionStrategy->shouldReceive('isReturnValueTransient')->andReturn(true);
 
         // Mock the retry strategy
         $expectation = $this->retryStrategy->shouldReceive('shouldRetry');
@@ -210,7 +239,13 @@ class TransientFaultHandlerTest extends TestCase
         }
 
         // Create a handler
-        $handler = new TransientFaultHandler($this->detectionStrategy, $this->retryStrategy, $this->sleep);
+        $handler = new TransientFaultHandler(
+            $this->exceptionDetectionStrategy,
+            $this->returnValueDetectionStrategy,
+            $this->retryStrategy,
+            $this->sleep
+        );
+
         $handler->execute(function () {
         });
     }
@@ -233,7 +268,7 @@ class TransientFaultHandlerTest extends TestCase
     public function testRetryCountIsIncremented()
     {
         // Mock the detection strategy
-        $this->detectionStrategy->shouldReceive('isResultTransient')->andReturn(true);
+        $this->returnValueDetectionStrategy->shouldReceive('isReturnValueTransient')->andReturn(true);
 
         // Mock the retry strategy
         $this->retryStrategy->shouldReceive('shouldRetry')->andReturn(true, true, false);
@@ -244,7 +279,13 @@ class TransientFaultHandlerTest extends TestCase
         $this->sleep->shouldReceive('milliSleep');
 
         // Create a handler
-        $handler = new TransientFaultHandler($this->detectionStrategy, $this->retryStrategy, $this->sleep);
+        $handler = new TransientFaultHandler(
+            $this->exceptionDetectionStrategy,
+            $this->returnValueDetectionStrategy,
+            $this->retryStrategy,
+            $this->sleep
+        );
+
         $handler->execute(function () {
         });
     }

@@ -12,10 +12,10 @@
  * @link https://github.com/graze/transient-fault-handler
  */
 
- namespace Graze\TransientFaultHandler\DetectionStrategy;
+namespace Graze\TransientFaultHandler\DetectionStrategy;
 
- interface ReturnValueDetectionStrategyInterface
- {
+interface ReturnValueDetectionStrategyInterface
+{
     /**
      * True if the return value of the function calls is indicative of a transient network error; false if the value
      * indicates success or a non-transient failure.
@@ -24,4 +24,4 @@
      * @return bool
      */
     public function isReturnValueTransient($value);
- }
+}
