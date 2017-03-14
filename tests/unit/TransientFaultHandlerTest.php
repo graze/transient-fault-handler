@@ -60,7 +60,7 @@ class TransientFaultHandlerTest extends TestCase
 
         // Mock the retry strategy
         $this->retryStrategy->shouldReceive('shouldRetry')->andReturn(true);
-        $this->retryStrategy->shouldReceive('getBackoffPeriod')->andReturn(0);
+        $this->retryStrategy->shouldReceive('calculateBackoffPeriod')->andReturn(0);
 
         // Mock the Sleep class
         $this->sleep->shouldReceive('milliSleep');
@@ -113,7 +113,7 @@ class TransientFaultHandlerTest extends TestCase
 
         // Mock the retry strategy
         $this->retryStrategy->shouldReceive('shouldRetry')->andReturn(true);
-        $this->retryStrategy->shouldReceive('getBackoffPeriod')->andReturn(0);
+        $this->retryStrategy->shouldReceive('calculateBackoffPeriod')->andReturn(0);
 
         // Mock the Sleep class
         $this->sleep->shouldReceive('milliSleep');
@@ -150,7 +150,7 @@ class TransientFaultHandlerTest extends TestCase
 
         // Mock the retry strategy
         $this->retryStrategy->shouldReceive('shouldRetry')->andReturn(true);
-        $this->retryStrategy->shouldReceive('getBackoffPeriod')->andReturn(0);
+        $this->retryStrategy->shouldReceive('calculateBackoffPeriod')->andReturn(0);
 
         // Mock the Sleep class
         $this->sleep->shouldReceive('milliSleep');
@@ -189,7 +189,7 @@ class TransientFaultHandlerTest extends TestCase
 
         // Mock the retry strategy
         $this->retryStrategy->shouldReceive('shouldRetry')->andReturn(true, true, true, false);
-        $this->retryStrategy->shouldReceive('getBackoffPeriod')->andReturn(0);
+        $this->retryStrategy->shouldReceive('calculateBackoffPeriod')->andReturn(0);
 
         // Mock the Sleep class
         $this->sleep->shouldReceive('milliSleep');
@@ -229,7 +229,7 @@ class TransientFaultHandlerTest extends TestCase
         // Mock the retry strategy
         $expectation = $this->retryStrategy->shouldReceive('shouldRetry');
         call_user_func_array([$expectation, 'andReturn'], $shouldRetryReturnValues);
-        $expectation = $this->retryStrategy->shouldReceive('getBackoffPeriod');
+        $expectation = $this->retryStrategy->shouldReceive('calculateBackoffPeriod');
         call_user_func_array([$expectation, 'andReturn'], $backoffPeriods);
 
         // Mock the Sleep class
@@ -272,8 +272,8 @@ class TransientFaultHandlerTest extends TestCase
 
         // Mock the retry strategy
         $this->retryStrategy->shouldReceive('shouldRetry')->andReturn(true, true, false);
-        $this->retryStrategy->shouldReceive('getBackoffPeriod')->with(0)->andReturn(0);
-        $this->retryStrategy->shouldReceive('getBackoffPeriod')->with(1)->andReturn(0);
+        $this->retryStrategy->shouldReceive('calculateBackoffPeriod')->with(0)->andReturn(0);
+        $this->retryStrategy->shouldReceive('calculateBackoffPeriod')->with(1)->andReturn(0);
 
         // Mock the Sleep class
         $this->sleep->shouldReceive('milliSleep');

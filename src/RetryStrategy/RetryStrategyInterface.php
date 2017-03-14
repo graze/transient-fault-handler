@@ -30,5 +30,5 @@ interface RetryStrategyInterface
      * @param int $retryCount
      * @return int
      */
-    public function getBackoffPeriod($retryCount);
+    public function calculateBackoffPeriod($retryCount);
 }

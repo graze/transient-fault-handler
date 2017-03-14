@@ -58,7 +58,7 @@ class ExponentialBackoffStrategy extends AbstractRetryStrategy implements RetryS
      * @param int $retryCount
      * @return int
      */
-    public function getBackoffPeriod($retryCount)
+    public function calculateBackoffPeriod($retryCount)
     {
         $offset = $this->firstFastRetry ? $this->multiplier : 0;
         $backoff = $this->minBackoff + rand(0, $this->multiplier * pow(2, $retryCount) - $offset);

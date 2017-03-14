@@ -104,7 +104,7 @@ class TransientFaultHandler implements TransientFaultHandlerInterface
                 break;
             }
 
-            $backoffPeriod = $this->retryStrategy->getBackoffPeriod($retryCount);
+            $backoffPeriod = $this->retryStrategy->calculateBackoffPeriod($retryCount);
             $retryCount++;
 
             if ($this->logger) {

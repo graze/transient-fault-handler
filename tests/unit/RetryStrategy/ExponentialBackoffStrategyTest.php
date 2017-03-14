@@ -32,7 +32,7 @@ class ExponentialBackoffStrategyTest extends TestCase
     public function testBackoffPeriodIsAboveMinimum($maxRetries, $firstFastRetry, $multiplier, $minBackoff, $maxBackoff, $retryCount)
     {
         $strategy = new ExponentialBackoffStrategy($maxRetries, $firstFastRetry, $multiplier, $minBackoff, $maxBackoff);
-        $this->assertGreaterThanOrEqual($minBackoff, $strategy->getBackoffPeriod($retryCount));
+        $this->assertGreaterThanOrEqual($minBackoff, $strategy->calculateBackoffPeriod($retryCount));
     }
 
     /**
