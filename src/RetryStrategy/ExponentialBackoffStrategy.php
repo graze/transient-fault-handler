@@ -19,39 +19,64 @@ use InvalidArgumentException;
 class ExponentialBackoffStrategy extends AbstractRetryStrategy implements RetryStrategyInterface
 {
     /** @var bool */
-    protected $firstFastRetry;
+    protected $firstFastRetry = false;
 
     /** @var int */
-    protected $minBackoff;
+    protected $minBackoff = 0;
 
     /** @var int */
     protected $maxBackoff;
 
     /** @var int */
-    protected $multiplier;
+    protected $multiplier = 1000;
 
     /**
-     * ExponentialBackoffStrategy constructor.
+     * Whether to retry immediately in the first instance (or after minBackoff if set).
      *
-     * @param int $maxRetries Maximum number of allowed retries before giving up
-     * @param bool $firstFastRetry Whether to retry immediately in the first instance (or after minBackoff if non-zero)
-     * @param int $multiplier The upper bound for the backoff period will be multiplied by this. A value of 1000 will
-     * give backoff periods that increase in the order of seconds, e.g. 1s, 2s, 4s, ....
-     * @param int $minBackoff The minimum allowed time in ms between retries
-     * @param int|null $maxBackoff The maximum allowed time in ms between retries
+     * @param bool $firstFastRetry
      */
-    public function __construct($maxRetries = 2, $firstFastRetry = false, $multiplier = 1000, $minBackoff = 0, $maxBackoff = null)
+    public function setFirstFastRetry($firstFastRetry)
     {
-        parent::__construct($maxRetries);
+        $this->firstFastRetry = $firstFastRetry;
+    }
 
-        if ($maxBackoff && $minBackoff > $maxBackoff) {
+    /**
+     * The minimum allowed time in ms between retries.
+     *
+     * @param int $minBackoff
+     */
+    public function setMinBackoff($minBackoff)
+    {
+        if ($this->maxBackoff && $minBackoff > $this->maxBackoff) {
             throw new InvalidArgumentException("Minimum backoff period must be less than or equal to maximum backoff period");
         }
 
-        $this->firstFastRetry = $firstFastRetry;
-        $this->multiplier = $multiplier;
         $this->minBackoff = $minBackoff;
+    }
+
+    /**
+     * The maximum allowed time in ms between retries.
+     *
+     * @param int $maxBackoff
+     */
+    public function setMaxBackoff($maxBackoff)
+    {
+        if ($maxBackoff < $this->minBackoff) {
+            throw new InvalidArgumentException("Maximum backoff period must be more than or equal to minimum backoff period");
+        }
+
         $this->maxBackoff = $maxBackoff;
+    }
+
+    /**
+     * The upper bound for the backoff period will be multiplied by this. A value of 1000 will give backoff periods
+     * that increase in the order of seconds, i.e. 1s, 2s, 4s, ....
+     *
+     * @param int $multiplier
+     */
+    public function setMultiplier($multiplier)
+    {
+        $this->multiplier = $multiplier;
     }
 
     /**

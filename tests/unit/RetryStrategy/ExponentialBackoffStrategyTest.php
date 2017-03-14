@@ -31,7 +31,12 @@ class ExponentialBackoffStrategyTest extends TestCase
      */
     public function testBackoffPeriodIsAboveMinimum($maxRetries, $firstFastRetry, $multiplier, $minBackoff, $maxBackoff, $retryCount)
     {
-        $strategy = new ExponentialBackoffStrategy($maxRetries, $firstFastRetry, $multiplier, $minBackoff, $maxBackoff);
+        $strategy = new ExponentialBackoffStrategy($maxRetries);
+        $strategy->setFirstFastRetry($firstFastRetry);
+        $strategy->setMultiplier($multiplier);
+        $strategy->setMinBackoff($minBackoff);
+        $strategy->setMaxBackoff($maxBackoff);
+
         $this->assertGreaterThanOrEqual($minBackoff, $strategy->calculateBackoffPeriod($retryCount));
     }
 
@@ -40,7 +45,9 @@ class ExponentialBackoffStrategyTest extends TestCase
      */
     public function testMinBackoffAboveMaxBackoff()
     {
-        new ExponentialBackoffStrategy(1, false, 1000, 5, 4);
+        $strategy = new ExponentialBackoffStrategy(1);
+        $strategy->setMinBackoff(5);
+        $strategy->setMaxBackoff(4);
     }
 
     /**
@@ -52,7 +59,7 @@ class ExponentialBackoffStrategyTest extends TestCase
         $firstFastRetry = [true, false];
         $multiplier = [1000];
         $minBackoff = [0, 10];
-        $maxBackoff = [10, 1000, null];
+        $maxBackoff = [10, 1000];
         $retryCount = [0, 10];
 
         $cartesianProduct = new CartesianProduct();
