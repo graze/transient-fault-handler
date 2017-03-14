@@ -30,7 +30,7 @@ class StaticDetectionStrategy implements ExceptionDetectionStrategyInterface, Re
     private $returnTransient;
 
     /**
-     * StaticExceptionDetectionStrategy constructor.
+     * StaticDetectionStrategy constructor.
      *
      * @param bool $returnTransient The value to always return when detecting transient errors
      */
