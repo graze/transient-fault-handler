@@ -15,7 +15,8 @@
 namespace Graze\TransientFaultHandler;
 
 use Exception;
-use Graze\TransientFaultHandler\DetectionStrategy\DetectionStrategyInterface;
+use Graze\TransientFaultHandler\DetectionStrategy\ExceptionDetectionStrategyInterface;
+use Graze\TransientFaultHandler\DetectionStrategy\ReturnValueDetectionStrategyInterface;
 use Graze\TransientFaultHandler\RetryStrategy\RetryStrategyInterface;
 use Psr\Log\LoggerAwareTrait;
 
@@ -29,8 +30,11 @@ class TransientFaultHandler implements TransientFaultHandlerInterface
 {
     use LoggerAwareTrait;
 
-    /** @var DetectionStrategyInterface */
-    private $detectionStrategy;
+    /** @var ExceptionDetectionStrategyInterface */
+    private $exceptionDetectionStrategy;
+
+    /** @var ReturnValueDetectionStrategyInterface */
+    private $returnValueDetectionStrategy;
 
     /** @var RetryStrategyInterface */
     private $retryStrategy;
@@ -41,16 +45,19 @@ class TransientFaultHandler implements TransientFaultHandlerInterface
     /**
      * TransientFaultHandler constructor.
      *
-     * @param DetectionStrategyInterface $detectionStrategy
+     * @param ExceptionDetectionStrategyInterface $exceptionDetectionStrategy
+     * @param ReturnValueDetectionStrategyInterface $returnValueDetectionStrategy
      * @param RetryStrategyInterface $retryStrategy
      * @param Sleep $sleep
      */
     public function __construct(
-        DetectionStrategyInterface $detectionStrategy,
+        ExceptionDetectionStrategyInterface $exceptionDetectionStrategy,
+        ReturnValueDetectionStrategyInterface $returnValueDetectionStrategy,
         RetryStrategyInterface $retryStrategy,
         Sleep $sleep
     ) {
-        $this->detectionStrategy = $detectionStrategy;
+        $this->exceptionDetectionStrategy = $exceptionDetectionStrategy;
+        $this->returnValueDetectionStrategy = $returnValueDetectionStrategy;
         $this->retryStrategy = $retryStrategy;
         $this->sleep = $sleep;
     }
@@ -70,24 +77,24 @@ class TransientFaultHandler implements TransientFaultHandlerInterface
         $retryCount = 0;
 
         do {
-            $result = null;
+            $returnValue = null;
             $exception = null;
 
             try {
-                $result = $task();
-                $transient = $this->detectionStrategy->isResultTransient($result);
+                $returnValue = $task();
+                $transient = $this->returnValueDetectionStrategy->isReturnValueTransient($returnValue);
 
                 // If the result does not indicate a transient error, return to the user
                 if (!$transient) {
-                    return $result;
+                    return $returnValue;
                 }
             } catch (Exception $e) {
                 $exception = $e;
-                $transient = $this->detectionStrategy->isExceptionTransient($e);
+                $transient = $this->exceptionDetectionStrategy->isExceptionTransient($exception);
 
                 // If the exception is not transient, rethrow to the user
                 if (!$transient) {
-                    throw $e;
+                    throw $exception;
                 }
             }
 
@@ -101,7 +108,7 @@ class TransientFaultHandler implements TransientFaultHandlerInterface
             $retryCount++;
 
             if ($this->logger) {
-                $this->logger->debug("Task failed, retrying [$retryCount] in {$backoffPeriod}ms");
+                $this->logger->debug("Task failed, retrying [$retryCount] in {$backoffPeriod}ms.");
             }
 
             $this->sleep->milliSleep($backoffPeriod);
@@ -112,6 +119,6 @@ class TransientFaultHandler implements TransientFaultHandlerInterface
             throw $exception;
         }
 
-        return $result;
+        return $returnValue;
     }
 }

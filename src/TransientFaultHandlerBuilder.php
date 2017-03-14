@@ -14,8 +14,11 @@
 
 namespace Graze\TransientFaultHandler;
 
-use Exception;
-use Graze\TransientFaultHandler\DetectionStrategy\DetectionStrategyInterface;
+use Graze\TransientFaultHandler\DetectionStrategy\ExceptionDetectionStrategyInterface;
+use Graze\TransientFaultHandler\DetectionStrategy\FalseyReturnValueDetectionStrategy;
+use Graze\TransientFaultHandler\DetectionStrategy\ReturnValueDetectionStrategyInterface;
+use Graze\TransientFaultHandler\DetectionStrategy\StaticDetectionStrategy;
+use Graze\TransientFaultHandler\RetryStrategy\ExponentialBackoffStrategy;
 use Graze\TransientFaultHandler\RetryStrategy\RetryStrategyInterface;
 use Psr\Log\LoggerInterface;
 
@@ -24,8 +27,11 @@ class TransientFaultHandlerBuilder
     /** @var LoggerInterface */
     private $logger;
 
-    /** @var DetectionStrategyInterface */
-    private $detectionStrategy;
+    /** @var ExceptionDetectionStrategyInterface */
+    private $exceptionDetectionStrategy;
+
+    /** @var ReturnValueDetectionStrategyInterface */
+    private $returnValueDetectionStrategy;
 
     /** @var RetryStrategyInterface */
     private $retryStrategy;
@@ -41,12 +47,22 @@ class TransientFaultHandlerBuilder
     }
 
     /**
-     * @param DetectionStrategyInterface $detectionStrategy
+     * @param ExceptionDetectionStrategyInterface $exceptionDetectionStrategy
      * @return TransientFaultHandlerBuilder
      */
-    public function setDetectionStrategy(DetectionStrategyInterface $detectionStrategy)
+    public function setExceptionDetectionStrategy(ExceptionDetectionStrategyInterface $exceptionDetectionStrategy)
     {
-        $this->detectionStrategy = $detectionStrategy;
+        $this->exceptionDetectionStrategy = $exceptionDetectionStrategy;
+        return $this;
+    }
+
+    /**
+     * @param ReturnValueDetectionStrategyInterface $returnValueDetectionStrategy
+     * @return TransientFaultHandlerBuilder
+     */
+    public function setReturnValueDetectionStrategy(ReturnValueDetectionStrategyInterface $returnValueDetectionStrategy)
+    {
+        $this->returnValueDetectionStrategy = $returnValueDetectionStrategy;
         return $this;
     }
 
@@ -62,20 +78,20 @@ class TransientFaultHandlerBuilder
 
     /**
      * @return TransientFaultHandler
-     * @throws Exception
      */
     public function build()
     {
-        if (!$this->detectionStrategy) {
-            throw new Exception("No detection strategy set");
-        }
-
-        if (!$this->retryStrategy) {
-            throw new Exception("No retry strategy set");
-        }
-
+        $exceptionDetectionStrategy = $this->exceptionDetectionStrategy ?: new StaticDetectionStrategy();
+        $returnValueDetectionStrategy = $this->returnValueDetectionStrategy ?: new FalseyReturnValueDetectionStrategy();
+        $retryStrategy = $this->retryStrategy ?: new ExponentialBackoffStrategy();
         $sleep = new Sleep();
-        $transientFaultHandler = new TransientFaultHandler($this->detectionStrategy, $this->retryStrategy, $sleep);
+
+        $transientFaultHandler = new TransientFaultHandler(
+            $exceptionDetectionStrategy,
+            $returnValueDetectionStrategy,
+            $retryStrategy,
+            $sleep
+        );
 
         if ($this->logger) {
             $transientFaultHandler->setLogger($this->logger);

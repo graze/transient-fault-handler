@@ -14,29 +14,14 @@
 
 namespace Graze\TransientFaultHandler\DetectionStrategy;
 
-use Exception;
-
-class ExceptionDetectionStrategy implements DetectionStrategyInterface
+interface ReturnValueDetectionStrategyInterface
 {
     /**
-     * Assume any result is a positive result
+     * True if the return value of the function calls is indicative of a transient network error; false if the value
+     * indicates success or a non-transient failure.
      *
-     * @param mixed $result
+     * @param mixed $value
      * @return bool
      */
-    public function isResultTransient($result)
-    {
-        return false;
-    }
-
-    /**
-     * Assume all exceptions indicate a transient network error.
-     *
-     * @param Exception $result
-     * @return bool
-     */
-    public function isExceptionTransient(Exception $result)
-    {
-        return true;
-    }
+    public function isReturnValueTransient($value);
 }

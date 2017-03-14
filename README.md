@@ -20,7 +20,7 @@ $ composer require graze/transient-fault-handler
 
 ## Usage
 
-The transient fault handler takes a detection strategy and a retry strategy.
+The transient fault handler takes two detection strategies and a retry strategy. The builder can be used to quickly create a handler.
 
 ``` php
 $task = function () {
@@ -28,27 +28,42 @@ $task = function () {
 };
 
 $builder = new TransientFaultHandlerBuilder();
-$transientFaultHandler = $builder
-    ->setDetectionStrategy(new DefaultDetectionStrategy())
-    ->setRetryStrategy(new ExponentialBackoffStrategy())
-    ->build();
+$transientFaultHandler = $builder->build();
 
 $result = $transientFaultHandler->execute($task);
 ```
 
 ### Detection Strategy
 
-When a task is tried, it will either return some value or throw an exception. The detection strategy will decide if that value/exception indicates a transient error or not. If it does, then the fault handler will be told to retry the task. if it does not, then the value/exception either indicates a success or a non-transient error that retrying wouldn't solve. In these cases, the value is returned to the caller or the exception is rethrown.
+When a task is tried, it will either return some value or throw an exception. 
+The detection strategies will decide if that value/exception indicates a transient error or not. 
+If it does, then the fault handler will be told to retry the task. if it does not, then the value/exception either indicates a success or a non-transient error that retrying wouldn't solve.
+In these cases, the value is returned to the caller or the exception is rethrown.
 
-- `DefaultDetectionStrategy`: treats return values that [evaluate to false](http://php.net/manual/en/types.comparisons.php) and all exceptions as transient.
-- `ExceptionDetectionStrategy`: treats all exceptions as transient and any return value as non-transient.
-
+- `FalseyReturnValueDetectionStrategy`: treats return values that [evaluate to false](http://php.net/manual/en/types.comparisons.php) as transient.
+- `StaticDetectionStrategy`: returns a static value set when constructing the strategy, regardless of the return value or exception.
 
 ### Retry Strategy
 
 If the detection strategy decides that the task should be retried, the retry strategy will decide how long to wait before doing so (the backoff period), and optionally impose a maximum number of retries on the task.
 
 - `ExponentialBackoffStrategy`: the backoff period is chosen randomly between zero and an exponentially increasing maximum.
+
+### Builder
+
+The builder makes it easier to create a fault handler by automatically injecting dependencies.
+The default strategies that the builder uses can be overridden by using the setters.
+
+``` php
+
+$builder = new TransientFaultHandlerBuilder();
+$transientFaultHandler = $builder
+    ->setExceptionDetectionStrategy(new StaticDetectionStrategy())
+    ->setReturnValueDetectionStrategy(new FalseyReturnValueDetectionStrategy())
+    ->setRetryStrategy(new ExponentialBackoffStrategy())
+    ->setLogger(new Logger())
+    ->build();
+```
 
 ## Change log
 
