@@ -31,7 +31,7 @@ class ExponentialBackoffStrategy extends AbstractRetryStrategy implements RetryS
     protected $multiplier = 1000;
 
     /**
-     * Whether to retry immediately in the first instance (or after minBackoff if set).
+     * Whether to retry immediately in the first instance (overriding minBackoff if set).
      *
      * @param bool $firstFastRetry
      */
@@ -85,8 +85,12 @@ class ExponentialBackoffStrategy extends AbstractRetryStrategy implements RetryS
      */
     public function calculateBackoffPeriod($retryCount)
     {
-        $offset = $this->firstFastRetry ? $this->multiplier : 0;
-        $backoff = $this->minBackoff + rand(0, $this->multiplier * pow(2, $retryCount) - $offset);
+        if ($this->firstFastRetry && $retryCount === 0) {
+            return 0;
+        }
+
+        $upperBound = $this->multiplier * (pow(2, $retryCount) - 1);
+        $backoff = $this->minBackoff + rand(0, $upperBound);
 
         if ($this->maxBackoff) {
             $backoff = min($backoff, $this->maxBackoff);

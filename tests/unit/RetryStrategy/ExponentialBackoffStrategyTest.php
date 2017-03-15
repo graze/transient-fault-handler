@@ -23,16 +23,14 @@ class ExponentialBackoffStrategyTest extends TestCase
     /**
      * @dataProvider backoffPeriodDataProvider
      * @param int $maxRetries
-     * @param bool $firstFastRetry
      * @param bool $multiplier
      * @param int $minBackoff
      * @param int|null $maxBackoff
      * @param int $retryCount
      */
-    public function testBackoffPeriodIsAboveMinimum($maxRetries, $firstFastRetry, $multiplier, $minBackoff, $maxBackoff, $retryCount)
+    public function testBackoffPeriodIsAboveMinimum($maxRetries, $multiplier, $minBackoff, $maxBackoff, $retryCount)
     {
         $strategy = new ExponentialBackoffStrategy($maxRetries);
-        $strategy->setFirstFastRetry($firstFastRetry);
         $strategy->setMultiplier($multiplier);
         $strategy->setMinBackoff($minBackoff);
         $strategy->setMaxBackoff($maxBackoff);
@@ -51,18 +49,37 @@ class ExponentialBackoffStrategyTest extends TestCase
     }
 
     /**
+     * Test that the backoff period is zero for the first retry when firstFastRetry is set to true.
+     *
+     * @dataProvider backoffPeriodDataProvider
+     * @param int $maxRetries
+     * @param bool $multiplier
+     * @param int $minBackoff
+     * @param int|null $maxBackoff
+     */
+    public function testFirstFastRetry($maxRetries, $multiplier, $minBackoff, $maxBackoff)
+    {
+        $strategy = new ExponentialBackoffStrategy($maxRetries);
+        $strategy->setFirstFastRetry(true);
+        $strategy->setMultiplier($multiplier);
+        $strategy->setMinBackoff($minBackoff);
+        $strategy->setMaxBackoff($maxBackoff);
+
+        $this->assertEquals(0, $strategy->calculateBackoffPeriod(0));
+    }
+
+    /**
      * @return array
      */
     public function backoffPeriodDataProvider()
     {
         $maxRetries = [0, 1, 10];
-        $firstFastRetry = [true, false];
         $multiplier = [1000];
         $minBackoff = [0, 10];
         $maxBackoff = [10, 1000];
         $retryCount = [0, 10];
 
         $cartesianProduct = new CartesianProduct();
-        return $cartesianProduct->build([$maxRetries, $firstFastRetry, $multiplier, $minBackoff, $maxBackoff, $retryCount]);
+        return $cartesianProduct->build([$maxRetries, $multiplier, $minBackoff, $maxBackoff, $retryCount]);
     }
 }
