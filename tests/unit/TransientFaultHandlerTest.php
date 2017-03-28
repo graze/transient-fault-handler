@@ -46,6 +46,32 @@ class TransientFaultHandlerTest extends TestCase
     }
 
     /**
+     * Test that a task can be passed as a string holding the namespaced name of a function.
+     *
+     * A string containing the namespace and name of a function is a "Callable" in PHP. Before PHP 7, calling a string
+     * like this using bracket notation would fail, e.g. '\Foo::test'(), and so call_user_func() had to be used. This
+     * test protects against this backwards compatibility being removed.
+     */
+    public function testCallablesPassedAsStringAreExecuted()
+    {
+        // Mock the detection strategy
+        $this->returnValueDetectionStrategy->shouldReceive('isReturnValueTransient')->andReturn(false)->once();
+
+        // Create a handler
+        $handler = new TransientFaultHandler(
+            $this->exceptionDetectionStrategy,
+            $this->returnValueDetectionStrategy,
+            $this->retryStrategy,
+            $this->sleep
+        );
+
+        $result = $handler->execute('\Graze\TransientFaultHandler\Test\Samples::simpleTask');
+
+        // Test that the result of the task is returned by the handler
+        $this->assertEquals('success', $result);
+    }
+
+    /**
      * Test that retries stop after the task returns a success value.
      *
      * @dataProvider doesNotRetryAfterSuccessDataProvider
