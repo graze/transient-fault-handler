@@ -81,7 +81,7 @@ class TransientFaultHandler implements TransientFaultHandlerInterface
             $exception = null;
 
             try {
-                $returnValue = $task();
+                $returnValue = call_user_func($task);
                 $transient = $this->returnValueDetectionStrategy->isReturnValueTransient($returnValue);
 
                 // If the result does not indicate a transient error, return to the user
