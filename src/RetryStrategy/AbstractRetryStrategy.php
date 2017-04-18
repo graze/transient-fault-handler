@@ -24,7 +24,7 @@ abstract class AbstractRetryStrategy implements RetryStrategyInterface
      *
      * @param int $maxRetries
      */
-    public function __construct($maxRetries = 1)
+    public function __construct($maxRetries = 2)
     {
         $this->maxRetries = $maxRetries;
     }
