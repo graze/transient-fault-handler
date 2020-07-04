@@ -7,7 +7,6 @@
 [![Quality Score](https://img.shields.io/scrutinizer/g/graze/transient-fault-handler.svg?style=flat-square)](https://scrutinizer-ci.com/g/graze/transient-fault-handler)
 [![Total Downloads](https://img.shields.io/packagist/dt/graze/transient-fault-handler.svg?style=flat-square)](https://packagist.org/packages/graze/transient-fault-handler)
 
-
 Retries tasks that fail due to transient errors. Well suited to network requests but can retry any callable.
 
 ## Install
@@ -15,7 +14,7 @@ Retries tasks that fail due to transient errors. Well suited to network requests
 Via Composer
 
 ``` bash
-$ composer require graze/transient-fault-handler
+composer require graze/transient-fault-handler
 ```
 
 ## Usage
@@ -35,9 +34,12 @@ $result = $transientFaultHandler->execute($task);
 
 ### Detection Strategy
 
-When a task is tried, it will either return some value or throw an exception. 
-The detection strategies will decide if that value/exception indicates a transient error or not. 
+When a task is tried, it will either return some value or throw an exception.
+
+The detection strategies will decide if that value/exception indicates a transient error or not.
+
 If it does, then the fault handler will be told to retry the task. if it does not, then the value/exception either indicates a success or a non-transient error that retrying wouldn't solve.
+
 In these cases, the value is returned to the caller or the exception is rethrown.
 
 - `FalseyReturnValueDetectionStrategy`: treats return values that [evaluate to false](http://php.net/manual/en/types.comparisons.php) as transient.
@@ -72,7 +74,7 @@ Please see [CHANGELOG](CHANGELOG.md) for more information what has changed recen
 ## Testing
 
 ``` bash
-$ make test
+make test
 ```
 
 ## Contributing
@@ -81,7 +83,7 @@ Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
 
 ## Security
 
-If you discover any security related issues, please email security@graze.com instead of using the issue tracker.
+If you discover any security related issues, please email <security@graze.com> instead of using the issue tracker.
 
 ## Credits
 
